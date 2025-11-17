@@ -1,0 +1,6 @@
+Paths run_materia_lca
+
+xml_building : "C:\Users\RFW474\Documents\Projects\MaterIA_LCA\xml_building.xml"
+excel_builder : "P:\Construction Durable Economie Circulaire\Internships\2025_Killian_Legrand\Part II\Adm_Gol_01.xlsx"
+generic_epds : "C:\Users\RFW474\Documents\Projects\MaterIA_LCA_data\GenPro\generic"
+excel_with_GWPs : "P:\Construction Durable Economie Circulaire\Internships\2025_Killian_Legrand\Part II\GenProducts_with_GWP.xlsx"

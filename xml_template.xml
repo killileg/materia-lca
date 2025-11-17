@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ns:buildingDataSet xmlns:builder="https://materia.eco.lu/element" xmlns:materia="https://materia.eco.lu/materia" xmlns:ns="http://materia.eco.lu/ns">
+    <ns:buildingInformation>
+        <builder:buildingID>buildingID</builder:buildingID>
+            <builder:buildingName>Sample Building</builder:buildingName>
+            <builder:location>Sample Location</builder:location>
+            <builder:buildingYear>buildingYear</builder:buildingYear>
+        <ns:processes>
+            <ns:process>
+                <materia:processUUID>processUUID</materia:processUUID>
+                <builder:processName>Process</builder:processName>
+                <ns:classification>
+                    <builder:elementClass>
+                        <builder:class level="3">x.y.z</builder:class>
+                        <builder:class level="4">a.b.c</builder:class>                       
+                    </builder:elementClass>
+                    <builder:materialClass>
+                        <builder:classification name="EE Classification">ClassMatn°</builder:classification>
+                    </builder:materialClass>
+                </ns:classification>
+                <ns:product>
+                    <builder:referenceUnit>unit</builder:referenceUnit>
+                    <builder:quantity>quantity</builder:quantity>
+                </ns:product>
+            </ns:process>
+        </ns:processes>
+    </ns:buildingInformation>
+</ns:buildingDataSet>

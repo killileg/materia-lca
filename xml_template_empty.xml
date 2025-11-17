@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ns:buildingDataSet xmlns:builder="https://materia.eco.lu/element" xmlns:materia="https://materia.eco.lu/materia" xmlns:ns="http://materia.eco.lu/ns">
+    <ns:buildingInformation>
+        <builder:buildingID>buildingID</builder:buildingID>
+            <builder:buildingName>Sample Building</builder:buildingName>
+            <builder:location>Sample Location</builder:location>
+            <builder:buildingYear>buildingYear</builder:buildingYear>
+        <ns:processes>
+        </ns:processes>
+    </ns:buildingInformation>
+</ns:buildingDataSet>
