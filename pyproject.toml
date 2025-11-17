@@ -1,9 +1,42 @@
 [build-system]
-# AVOID CHANGING REQUIRES: IT WILL BE UPDATED BY PYSCAFFOLD!
+# Managed by PyScaffold – do not modify manually
 requires = ["setuptools>=46.1.0", "setuptools_scm[toml]>=5"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "materia_lca"
+description = "A tool for processing and generating LCA XML data"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [
+    { name = "Killian Legrand" }
+]
+dynamic = ["version"]
+
+# -------- Dependencies to install with the package ----------
+dependencies = [
+    "click",
+    "lxml",
+    "pandas",
+    "openpyxl"
+]
+
+[project.optional-dependencies]
+dev = [
+    "black==23.9.1",
+    "flake8==6.1.0",
+    "pytest==7.4.2",
+    "pytest-cov==4.1.0",
+    "pre-commit==3.4.0",
+    "deptry",
+    "coverage-badge",
+    "sphinx"
+]
+
+[project.scripts]
+# CLI entrypoint so users can run `materia-lca` directly
+materia-lca = "materia_lca.cli:main"
+
 [tool.setuptools_scm]
-# For smarter version schemes and other configuration options,
-# check out https://github.com/pypa/setuptools_scm
 version_scheme = "no-guess-dev"
