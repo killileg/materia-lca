@@ -1,8 +1,9 @@
-from pathlib import Path
 import xml.etree.ElementTree as ET
 import pandas as pd
+from pathlib import Path
 from materia_lca.constants import NS, NSgen, MODULES, GWP_MAP
 from materia_lca.utils import handle_produit_type, UUID_finder
+
 
 for p, uri in NS.items():
         ET.register_namespace(p, uri)
@@ -15,55 +16,76 @@ def define_project(root, projectID: str):   # default name for the moment
     project.find(".//builder:buildingYear", NS).text = "2030"
     #proc.find(".//materia:processUUID", NS).text = str(match_row["ID"])
 
-# Create the process information block of a product
-def add_process(row, root, df_ref) -> ET.Element:
+
+
+def add_product(row, root, df_ref) -> ET.Element:
     # find the place where to put our process
-    processes = root.find(".//ns:processes", NS)
+    category = row["Tier 4"]
+    if "---" in category:
+        category = row["Tier 3"]
 
-    parts, process_name = handle_produit_type(str(row["Produit type"]))
+    #level1, level2, level3, level4 = str(category.split(".")[0]), str(category.split(".")[1]), str(category.split(".")[2]), str(category.split(".")[3])
+    a, b, c, d = str(category.split(".")[0]), str(category.split(".")[1]), str(category.split(".")[2]), str(category.split(".")[3])
+    level1, level2, level3, level4 = str(a), str(a + "." + b), str(a + "." + b + "." + c), str(a + "." + b + "." + c + "." + d)
 
-    # Create <ns:process>
-    proc = ET.SubElement(processes, f"{{{NS['ns']}}}process")
-    ET.SubElement(proc, f"{{{NS['materia']}}}processUUID").text = UUID_finder(process_name, df_ref) #str(row["UUID"])
-    ET.SubElement(proc, f"{{{NS['builder']}}}processName").text = str(process_name)
+    building = root.find(f".//ns:building", NS)
+    existing_parts = building.findall(".ns:Part", NS)
+    part = next((p for p in existing_parts if p.find("builder:classification", NS).text.strip() == str(level1)), None)
+    if part is None:
+        part = ET.SubElement(building, f"{{{NS['ns']}}}Part")
+        cls = ET.SubElement(part, f"{{{NS['builder']}}}classification", {"level": "1"})
+        cls.text = str(level1)
 
+    existing_systems = part.findall(".ns:System", NS)
+    system = next((s for s in existing_systems if s.find("builder:classification", NS).text.strip() == str(level2)), None)
+    if system is None:
+        system = ET.SubElement(part, f"{{{NS['ns']}}}System")
+        cls = ET.SubElement(system, f"{{{NS['builder']}}}classification", {"level": "2"})
+        cls.text = str(level2)
+        
 
-    # --- Classification section (builder + materia) ---
-    cls = ET.SubElement(proc, f"{{{NS['ns']}}}classification")
+    existing_elements = system.findall(".ns:Element", NS)
+    element = next((e for e in existing_elements if e.find("builder:classification", NS).text.strip() == str(level3)), None)
+    if element is None:
+        element = ET.SubElement(system, f"{{{NS['ns']}}}Element")
+        cls = ET.SubElement(element, f"{{{NS['builder']}}}classification", {"level": "3"})
+        cls.text = str(level3)
 
-    b_info = ET.SubElement(cls, f"{{{NS['builder']}}}elementClass")
-    ET.SubElement(b_info, f"{{{NS['builder']}}}class", {"level":"3"}).text = str(row["Tier 3"])
-    ET.SubElement(b_info, f"{{{NS['builder']}}}class", {"level":"4"}).text = str(row["Tier 4"])
+    existing_subelements = element.findall(".ns:SubElement", NS)
+    subelement = next((se for se in existing_subelements if se.find("builder:classification", NS).text.strip() == str(level4)), None)
+    if subelement is None:
+        subelement = ET.SubElement(element, f"{{{NS['ns']}}}SubElement")
+        cls = ET.SubElement(subelement, f"{{{NS['builder']}}}classification", {"level": "4"})
+        cls.text = str(level4)
 
-    m_info = ET.SubElement(cls, f"{{{NS['builder']}}}materialClass")
-    m_cls  = ET.SubElement(m_info, f"{{{NS['builder']}}}classification", {"name": "EE Classification"}).text = str(row["Classe Mat n°"])
-   
-    # --- Product info ---
-    prod = ET.SubElement(proc, f"{{{NS['ns']}}}product")
-    ET.SubElement(prod, f"{{{NS['builder']}}}referenceUnit").text = str(row["unité"])
-    ET.SubElement(prod, f"{{{NS['builder']}}}quantity").text = str(float(row["Quantité"]))
+    opfjwa, process_name = handle_produit_type(str(row["Produit type"]))
+    product = ET.SubElement(subelement, f"{{{NS['ns']}}}product")
+    ET.SubElement(product, f"{{{NS['materia']}}}processUUID").text = UUID_finder(process_name, df_ref)
+    ET.SubElement(product, f"{{{NS['builder']}}}processName").text = str(process_name)
+    ET.SubElement(product, f"{{{NS['builder']}}}classification", {"name": "EE Classification"}).text = str(row["Classe Mat n°"])
+    ET.SubElement(product, f"{{{NS['builder']}}}referenceUnit").text = str(row["unité"])
+    ET.SubElement(product, f"{{{NS['builder']}}}quantity").text = str(float(row["Quantité"]))
 
 
 def EXTRA_UUID_filler(xml_building, excel_with_GWPs): 
-    print("Doing tht eextra unnecessary avoidable task of finding and writing the product's UUDI in the building xml")
+    print("Doing the extra unnecessary avoidable task of finding and writing the product's UUID in the building xml")
     df_gen = pd.read_excel(excel_with_GWPs) 
 
     tree = ET.parse(xml_building)
     root = tree.getroot()
 
     column = df_gen["Produit"].astype(str).str.strip() # gets rid of whitespaces in cells of column
-    for proc in root.findall(".//ns:process", NS):
-        process_name = str(proc.find(".//builder:processName", NS).text).strip()
+    for prod in root.findall(".//ns:product", NS):
+        process_name = str(prod.find(".//builder:processName", NS).text).strip()
 
         matches = df_gen.loc[column == process_name]
         if not matches.empty:
             match_row = matches.iloc[0]          # only executes if a match exists
-            proc.find(".//materia:processUUID", NS).text = str(match_row["ID"])
+            prod.find(".//materia:processUUID", NS).text = str(match_row["ID"])
         else:
             print(f"No match found for: {process_name}")
 
     tree.write(xml_building, encoding="utf-8", xml_declaration=True)
-    
 
 
 def store_GWP_impact_xml(impact_row: list[float], generic_xml: Path | str):
@@ -78,6 +100,7 @@ def store_GWP_impact_xml(impact_row: list[float], generic_xml: Path | str):
                 lcia.find(f".//ns3:amount[@ns3:module='{module}']", NSgen).text = str(impact_row[specific_gwp])
 
     tree.write(generic_xml, encoding="utf-8", xml_declaration=True)
+
 
 
 def GWP_filler(generic_folder: Path | str, excel_with_GWPs: Path | str):
@@ -95,5 +118,3 @@ def GWP_filler(generic_folder: Path | str, excel_with_GWPs: Path | str):
         # Maybe add line in case file is not found
         impact_row = df.loc[uuid]
         store_GWP_impact_xml(impact_row, generic_file)
-
-    
