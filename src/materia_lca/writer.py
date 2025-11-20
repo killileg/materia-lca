@@ -8,6 +8,31 @@ from materia_lca.utils import handle_produit_type, UUID_finder
 for p, uri in NS.items():
         ET.register_namespace(p, uri)
 
+
+def create_xml_template(folder: str | Path, filename: str = "xml_building.xml"):
+    folder = Path(folder)
+    folder.mkdir(parents=True, exist_ok=True)
+
+    path = Path(folder / filename)
+
+    root = ET.Element(f"{{{NS['ns']}}}buildingDataSet")
+
+    binfo = ET.SubElement(root, f"{{{NS['ns']}}}buildingInformation")
+    ET.SubElement(binfo, f"{{{NS['builder']}}}buildingID").text = "buildingID"
+    ET.SubElement(binfo, f"{{{NS['builder']}}}buildingName").text = "Sample Building"
+    ET.SubElement(binfo, f"{{{NS['builder']}}}location").text = "Sample Location"
+    ET.SubElement(binfo, f"{{{NS['builder']}}}buildingYear").text = "buildingYear"
+
+    ET.SubElement(root, f"{{{NS['ns']}}}building")
+
+    tree = ET.ElementTree(root)
+    ET.indent(tree, "  ")
+    tree.write(path, encoding="utf-8", xml_declaration=True)
+    
+    print(f"XML created at: {path}")
+    return path
+
+
 def define_project(root, projectID: str):   # default name for the moment
     project = root.find(".//ns:buildingInformation", NS)
     project.find(".//builder:buildingID", NS).text = "buildingID"

@@ -1,7 +1,7 @@
 import xml.etree.ElementTree as ET
 import pandas as pd
 from pathlib import Path
-from materia_lca.writer import define_project, add_product, EXTRA_UUID_filler, GWP_filler
+from materia_lca.writer import create_xml_template, define_project, add_product, EXTRA_UUID_filler, GWP_filler
 from materia_lca.compute import add_impact_A1_A3
 
 def convert(xml_building, excel_builder):
@@ -28,8 +28,9 @@ def convert(xml_building, excel_builder):
     tree.write(xml_building, encoding="utf-8", xml_declaration=True)
     
 
-def run_materia_lca(xml_building: Path, excel_builder: Path, generic_epds: Path, excel_with_GWPs: Path):
+def run_materia_lca(folder_name: Path, excel_builder: Path, generic_epds: Path, excel_with_GWPs: Path):
     """Process the given file or folder path."""
+    xml_building = create_xml_template(folder_name)
     convert(xml_building, excel_builder)
     EXTRA_UUID_filler(xml_building, excel_with_GWPs)
     GWP_filler(generic_epds, excel_with_GWPs)
